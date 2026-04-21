@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import os
-import numpy as np
+
 import imageio_ffmpeg
+import numpy as np
 
 from manim import (
     DOWN,
@@ -11,7 +12,7 @@ from manim import (
     PI,
     RIGHT,
     UP,
-    AnimationGroup,
+    Circle,
     Create,
     DrawBorderThenFill,
     FadeIn,
@@ -20,11 +21,12 @@ from manim import (
     LaggedStart,
     Line,
     Polygon,
-    ReplacementTransform,
     RoundedRectangle,
     Scene,
     Square,
     Text,
+    Transform,
+    TransformFromCopy,
     VGroup,
     config,
 )
@@ -38,16 +40,23 @@ config.pixel_height = 1920
 config.frame_width = 9
 config.frame_height = 16
 config.frame_rate = 30
-config.background_color = "#FFF6E8"
+config.background_color = "#0B1020"
 
-TEXT_DARK = "#183153"
-OUTLINE = "#20405D"
-TRIANGLE_COLORS = ["#FF7A59", "#2EC4B6", "#FFD166", "#5E60CE"]
-A_COLOR = "#FFB703"
-B_COLOR = "#7BDFF2"
-C_COLOR = "#EF476F"
-
-FONT = "Trebuchet MS"
+SURFACE = "#11192B"
+PANEL_FILL = "#121B30"
+PANEL_STROKE = "#2A3A5A"
+TEXT_PRIMARY = "#F4F7FB"
+TEXT_SECONDARY = "#9FB0C7"
+OUTLINE = "#D6E2F1"
+TRIANGLE_COLORS = ["#244C74", "#2A5A86", "#316898", "#3877AA"]
+A_COLOR = "#66C18C"
+B_COLOR = "#59B7D3"
+C_COLOR = "#F4C15D"
+ACCENT = "#7AA7F8"
+MARKER_COLOR = "#B6C7DB"
+FONT = "Georgia"
+LAYOUT_SCALE = 0.96
+LAYOUT_CENTER = DOWN * 0.55
 
 
 class PythagoreanShortsPrototype(Scene):
@@ -55,282 +64,354 @@ class PythagoreanShortsPrototype(Scene):
         a = 3.0
         b = 2.0
 
-        title_card = self.make_title_card()
-        self.play(FadeIn(title_card, shift=UP * 0.35), run_time=1.0)
-        self.wait(0.6)
+        self.add(self.make_backdrop())
 
         header = self.make_header()
-        self.play(ReplacementTransform(title_card, header), run_time=0.8)
+        caption = self.make_caption("Take one right triangle with legs a and b.")
+        reference = self.make_reference_triangle(a, b)
+        layout_one = self.make_layout_one(a, b)
+        layout_two = self.make_layout_two(a, b)
 
-        caption = self.make_caption("Start with one right triangle.")
-        reference_triangle = self.make_reference_triangle(a, b)
-        self.play(FadeIn(caption, shift=UP * 0.2), run_time=0.5)
+        self.play(FadeIn(header, shift=UP * 0.2), FadeIn(caption, shift=UP * 0.12), run_time=1.0)
         self.play(
             LaggedStart(
-                Create(reference_triangle["triangle"]),
-                FadeIn(reference_triangle["right_angle"]),
-                FadeIn(reference_triangle["labels"]),
-                lag_ratio=0.18,
+                Create(reference["triangle"]),
+                FadeIn(reference["right_angle"], shift=UP * 0.05),
+                FadeIn(reference["labels"], shift=UP * 0.05),
+                lag_ratio=0.14,
             ),
             run_time=1.8,
         )
-        self.wait(1.0)
+        self.wait(0.35)
 
-        layout_one = self.make_layout_one(a, b)
         self.play(
-            ReplacementTransform(caption, self.make_caption("Pack 4 copies into a square of side a + b.")),
-            FadeOut(reference_triangle["group"], shift=UP * 0.25),
-            FadeIn(layout_one["outer_label"], shift=UP * 0.2),
-            FadeIn(layout_one["outer"], shift=DOWN * 0.15),
-            run_time=1.0,
+            Transform(caption, self.make_caption("Four congruent copies fit in a square of side a + b.")),
+            Create(layout_one["outer"]),
+            FadeIn(layout_one["outer_labels"], shift=UP * 0.06),
+            run_time=1.2,
         )
         self.play(
             LaggedStart(
-                *[FadeIn(triangle, scale=0.96) for triangle in layout_one["triangles"]],
-                lag_ratio=0.08,
+                *[TransformFromCopy(reference["triangle"], triangle) for triangle in layout_one["triangles"]],
+                lag_ratio=0.12,
             ),
-            run_time=1.4,
+            FadeOut(reference["labels"], shift=DOWN * 0.08),
+            FadeOut(reference["right_angle"], shift=DOWN * 0.08),
+            run_time=2.2,
         )
-        self.wait(0.6)
+        self.play(FadeOut(reference["triangle"], scale=0.92), run_time=0.3)
+
+        triangles = VGroup(*layout_one["triangles"])
+        self.wait(0.2)
 
         self.play(
-            ReplacementTransform(caption, self.make_caption("The middle gap is a tilted square with area c².")),
+            Transform(
+                caption,
+                self.make_caption("Each edge is c, and adjacent acute angles\nadd to 90°, so the gap is a square."),
+            ),
             DrawBorderThenFill(layout_one["center_square"]),
-            FadeIn(layout_one["c_side_label"], scale=0.85),
-            FadeIn(layout_one["center_label"], scale=0.85),
-            run_time=1.4,
+            FadeIn(layout_one["square_markers"], shift=UP * 0.04),
+            FadeIn(layout_one["c_label"], shift=UP * 0.04),
+            FadeIn(layout_one["center_label"], scale=0.92),
+            run_time=1.9,
         )
-        self.play(Indicate(layout_one["center_label"], color=C_COLOR, scale_factor=1.1), run_time=0.8)
-        self.wait(0.8)
+        self.wait(0.55)
 
-        layout_two = self.make_layout_two(a, b)
         self.play(
-            ReplacementTransform(caption, self.make_caption("Now rearrange the SAME 4 triangles.")),
+            Transform(caption, self.make_caption("Now rearrange the same four triangles.")),
             run_time=0.8,
         )
         self.play(
-            FadeOut(
-                VGroup(
-                    *layout_one["triangles"],
-                    layout_one["center_square"],
-                    layout_one["c_side_label"],
-                    layout_one["center_label"],
-                ),
-                shift=LEFT * 0.15,
-            ),
-            FadeIn(
-                VGroup(
-                    *layout_two["triangles"],
-                    layout_two["a_square"],
-                    layout_two["b_square"],
-                ),
-                shift=RIGHT * 0.15,
-            ),
-            run_time=1.4,
+            Transform(triangles[0], layout_two["triangles"][0], path_arc=-PI / 5),
+            Transform(triangles[1], layout_two["triangles"][1], path_arc=PI / 6),
+            Transform(triangles[2], layout_two["triangles"][2], path_arc=PI / 7),
+            Transform(triangles[3], layout_two["triangles"][3], path_arc=-PI / 6),
+            FadeOut(layout_one["center_square"]),
+            FadeOut(layout_one["square_markers"]),
+            FadeOut(layout_one["c_label"]),
+            FadeOut(layout_one["center_label"]),
+            run_time=2.4,
         )
+
         self.play(
-            ReplacementTransform(caption, self.make_caption("Now the empty space is a² and b².")),
+            Transform(caption, self.make_caption("The uncovered area is now a² plus b².")),
+            FadeIn(layout_two["a_square"]),
+            FadeIn(layout_two["b_square"]),
             FadeIn(layout_two["a_label"], scale=0.9),
             FadeIn(layout_two["b_label"], scale=0.9),
-            run_time=1.0,
+            run_time=1.25,
         )
-        self.wait(1.0)
+        self.wait(0.5)
 
-        proof_text = Text(
-            "Same outer square. Same 4 triangles.",
-            font=FONT,
-            font_size=26,
-            color=TEXT_DARK,
-            weight="BOLD",
-        )
-        proof_text.next_to(layout_two["outer"], DOWN, buff=0.35)
+        proof_note = self.make_proof_note()
+        proof_note.next_to(layout_one["outer"], DOWN, buff=0.38)
+
+        equation = self.make_equation_panel()
+        equation["group"].next_to(proof_note, DOWN, buff=0.28)
+
         self.play(
-            ReplacementTransform(caption, self.make_caption("So the leftover areas must be equal.")),
-            FadeIn(proof_text, shift=UP * 0.2),
-            run_time=1.0,
+            Transform(
+                caption,
+                self.make_caption("The outer square stayed the same,\nand the four triangles stayed the same."),
+            ),
+            FadeIn(proof_note, shift=UP * 0.1),
+            run_time=1.1,
         )
+        self.play(FadeIn(equation["panel"], scale=0.96), run_time=0.45)
+        self.play(
+            TransformFromCopy(layout_two["a_label"], equation["tokens"][0]),
+            FadeIn(equation["tokens"][1], shift=UP * 0.04),
+            TransformFromCopy(layout_two["b_label"], equation["tokens"][2]),
+            FadeIn(equation["tokens"][3], shift=UP * 0.04),
+            FadeIn(equation["tokens"][4], shift=UP * 0.04),
+            run_time=1.35,
+        )
+        self.play(
+            Transform(caption, self.make_caption("So a² + b² = c².")),
+            Indicate(equation["tokens"][4], color=C_COLOR, scale_factor=1.08),
+            run_time=0.85,
+        )
+        self.wait(1.7)
 
-        equation = self.make_equation()
-        equation.next_to(proof_text, DOWN, buff=0.25)
-        self.play(FadeIn(equation, shift=UP * 0.2), run_time=1.0)
-        self.play(Indicate(equation[0], color=C_COLOR, scale_factor=1.08), run_time=0.8)
-        self.wait(1.8)
+    def make_backdrop(self) -> VGroup:
+        halo_left = Circle(radius=3.2, stroke_width=0, fill_color="#173458", fill_opacity=0.16)
+        halo_left.move_to(LEFT * 3.6 + UP * 5.5)
 
-    def make_title_card(self) -> VGroup:
-        eyebrow = Text(
-            "Pythagorean Theorem",
-            font=FONT,
-            font_size=28,
-            color="#E76F51",
-            weight="BOLD",
-        )
-        headline = Text(
-            "Why does a² + b² = c²?",
-            font=FONT,
-            font_size=44,
-            color=TEXT_DARK,
-            weight="BOLD",
-        )
-        subtitle = Text(
-            "A visual proof in one short",
-            font=FONT,
-            font_size=28,
-            color="#47657B",
-        )
-        group = VGroup(eyebrow, headline, subtitle).arrange(DOWN, buff=0.14)
-        group.move_to(UP * 5.0)
-        return group
+        halo_right = Circle(radius=2.8, stroke_width=0, fill_color="#15405A", fill_opacity=0.14)
+        halo_right.move_to(RIGHT * 2.7 + DOWN * 4.5)
+
+        halo_bottom = Circle(radius=2.3, stroke_width=0, fill_color="#3C2A52", fill_opacity=0.12)
+        halo_bottom.move_to(LEFT * 2.2 + DOWN * 5.9)
+
+        backdrop = VGroup(halo_left, halo_right, halo_bottom)
+        backdrop.set_z_index(-20)
+        return backdrop
 
     def make_header(self) -> VGroup:
-        chip = RoundedRectangle(
-            corner_radius=0.25,
-            width=6.5,
-            height=0.85,
-            fill_color="#FFFFFF",
-            fill_opacity=0.92,
-            stroke_color="#F4C38A",
-            stroke_width=2,
-        )
-        text = Text(
-            "Visual Proof of a² + b² = c²",
+        eyebrow = Text(
+            "A classic rearrangement proof",
             font=FONT,
-            font_size=28,
-            color=TEXT_DARK,
+            font_size=21,
+            color=TEXT_SECONDARY,
+        )
+        title = Text(
+            "Why a² + b² = c²",
+            font=FONT,
+            font_size=42,
+            color=TEXT_PRIMARY,
             weight="BOLD",
         )
-        text.move_to(chip.get_center())
-        group = VGroup(chip, text)
-        group.to_edge(UP, buff=0.35)
+        rule = Line(LEFT * 1.45, RIGHT * 1.45, color=PANEL_STROKE, stroke_width=2)
+
+        group = VGroup(eyebrow, title, rule).arrange(DOWN, buff=0.14)
+        group.to_edge(UP, buff=0.45)
         return group
 
     def make_caption(self, message: str) -> VGroup:
         label = Text(
             message,
             font=FONT,
-            font_size=28,
-            color=TEXT_DARK,
-            weight="BOLD",
+            font_size=24,
+            color=TEXT_PRIMARY,
+            line_spacing=0.92,
         )
+        label.scale_to_fit_width(7.15)
         panel = RoundedRectangle(
-            corner_radius=0.22,
-            width=min(8.2, label.width + 0.8),
-            height=label.height + 0.42,
-            fill_color="#FFFFFF",
-            fill_opacity=0.94,
-            stroke_color="#F4C38A",
+            corner_radius=0.2,
+            width=min(8.15, label.width + 0.82),
+            height=label.height + 0.48,
+            fill_color=PANEL_FILL,
+            fill_opacity=0.9,
+            stroke_color=PANEL_STROKE,
             stroke_width=2,
         )
         label.move_to(panel.get_center())
+
         group = VGroup(panel, label)
-        group.to_edge(DOWN, buff=0.45)
+        group.to_edge(DOWN, buff=0.48)
         return group
 
     def make_reference_triangle(self, a: float, b: float) -> dict[str, VGroup]:
         triangle = Polygon(
-            np.array([-a / 2, -b / 2, 0]),
-            np.array([a / 2, -b / 2, 0]),
-            np.array([-a / 2, b / 2, 0]),
+            np.array([-a / 2, -b / 2, 0.0]),
+            np.array([a / 2, -b / 2, 0.0]),
+            np.array([-a / 2, b / 2, 0.0]),
             stroke_color=OUTLINE,
-            stroke_width=5,
-            fill_color="#FFE3D3",
-            fill_opacity=0.95,
+            stroke_width=4,
+            fill_color=TRIANGLE_COLORS[1],
+            fill_opacity=0.94,
         )
-        triangle.scale(0.7).move_to(UP * 1.15)
-
-        right_corner = triangle.get_vertices()[0]
-        right_angle = VGroup(
-            Line(right_corner + RIGHT * 0.18, right_corner + RIGHT * 0.18 + UP * 0.18, color=OUTLINE, stroke_width=4),
-            Line(right_corner + UP * 0.18, right_corner + RIGHT * 0.18 + UP * 0.18, color=OUTLINE, stroke_width=4),
-        )
+        triangle.scale(0.92).move_to(UP * 1.55)
 
         vertices = triangle.get_vertices()
-        a_label = Text("a", font=FONT, font_size=34, color=TEXT_DARK, weight="BOLD").next_to(
-            Line(vertices[0], vertices[1]), DOWN, buff=0.15
-        )
-        b_label = Text("b", font=FONT, font_size=34, color=TEXT_DARK, weight="BOLD").next_to(
-            Line(vertices[0], vertices[2]), LEFT, buff=0.15
-        )
-        c_label = Text("c", font=FONT, font_size=34, color=TEXT_DARK, weight="BOLD").next_to(
-            Line(vertices[1], vertices[2]), RIGHT, buff=0.15
+        right_angle = self.make_right_angle_marker(vertices[0], vertices[1], vertices[2], size=0.18, stroke_width=3.2)
+
+        a_label = self.make_segment_label("a", vertices[0], vertices[1], color=A_COLOR, font_size=32, buff=0.22)
+        b_label = self.make_segment_label("b", vertices[0], vertices[2], color=B_COLOR, font_size=32, buff=0.22)
+        c_label = self.make_segment_label(
+            "c",
+            vertices[1],
+            vertices[2],
+            color=C_COLOR,
+            font_size=32,
+            buff=0.24,
+            rotate_text=True,
+            reference_point=triangle.get_center(),
         )
         labels = VGroup(a_label, b_label, c_label)
-        group = VGroup(triangle, right_angle, labels)
-        return {"triangle": triangle, "right_angle": right_angle, "labels": labels, "group": group}
+        labels.set_z_index(12)
+
+        return {
+            "triangle": triangle,
+            "right_angle": right_angle,
+            "labels": labels,
+        }
 
     def make_layout_one(self, a: float, b: float) -> dict[str, object]:
-        s = a + b
-        outer = Square(side_length=s, stroke_color=OUTLINE, stroke_width=5)
-        outer.scale(0.86).move_to(DOWN * 0.5)
-        outer.set_z_index(20)
+        side_length = a + b
+        outer = self.make_outer_square(side_length)
 
         triangles = [
-            self.make_polygon([(0, 0), (a, 0), (0, b)], TRIANGLE_COLORS[0], s, outer),
-            self.make_polygon([(a, 0), (s, 0), (s, b)], TRIANGLE_COLORS[1], s, outer),
-            self.make_polygon([(b, s), (s, s), (s, b)], TRIANGLE_COLORS[2], s, outer),
-            self.make_polygon([(0, a), (0, s), (b, s)], TRIANGLE_COLORS[3], s, outer),
+            self.make_polygon([(0, 0), (a, 0), (0, b)], TRIANGLE_COLORS[0], side_length, outer),
+            self.make_polygon([(a, 0), (side_length, 0), (side_length, b)], TRIANGLE_COLORS[1], side_length, outer),
+            self.make_polygon(
+                [(b, side_length), (side_length, side_length), (side_length, b)],
+                TRIANGLE_COLORS[2],
+                side_length,
+                outer,
+            ),
+            self.make_polygon([(0, a), (0, side_length), (b, side_length)], TRIANGLE_COLORS[3], side_length, outer),
         ]
 
         center_square = self.make_polygon(
-            [(a, 0), (s, b), (b, s), (0, a)],
+            [(a, 0), (side_length, b), (b, side_length), (0, a)],
             C_COLOR,
-            s,
+            side_length,
             outer,
-            fill_opacity=0.28,
-            stroke_width=4,
+            fill_opacity=0.26,
+            stroke_width=3.2,
         )
-        center_label = Text("c²", font=FONT, font_size=40, color=C_COLOR, weight="BOLD")
-        center_label.move_to(center_square.get_center())
-        center_vertices = center_square.get_vertices()
-        c_edge = Line(center_vertices[0], center_vertices[1])
-        c_side_label = Text("c", font=FONT, font_size=26, color=C_COLOR, weight="BOLD")
-        c_side_label.rotate(c_edge.get_angle())
-        c_side_label.move_to(c_edge.get_center() + UP * 0.28 + LEFT * 0.06)
+        center_square.set_z_index(4)
 
-        outer_label = Text("a + b", font=FONT, font_size=28, color=TEXT_DARK, weight="BOLD")
-        outer_label.next_to(outer, UP, buff=0.2)
-        outer_label.set_z_index(21)
+        center_label = Text(
+            "c²",
+            font=FONT,
+            font_size=41,
+            color=C_COLOR,
+            weight="BOLD",
+        )
+        center_label.move_to(center_square.get_center())
+        center_label.set_z_index(8)
+
+        center_vertices = center_square.get_vertices()
+        square_markers = VGroup(
+            *[
+                self.make_right_angle_marker(
+                    center_vertices[index],
+                    center_vertices[index - 1],
+                    center_vertices[(index + 1) % 4],
+                    size=0.16,
+                    stroke_width=2.6,
+                )
+                for index in range(4)
+            ]
+        )
+        square_markers.set_z_index(7)
+
+        c_label = self.make_segment_label(
+            "c",
+            center_vertices[0],
+            center_vertices[1],
+            color=C_COLOR,
+            font_size=28,
+            buff=0.24,
+            rotate_text=True,
+            reference_point=center_square.get_center(),
+        )
+        c_label.set_z_index(8)
+
+        outer_top = Text(
+            "a + b",
+            font=FONT,
+            font_size=27,
+            color=TEXT_SECONDARY,
+            weight="BOLD",
+        )
+        outer_top.next_to(outer, UP, buff=0.18)
+
+        outer_side = Text(
+            "a + b",
+            font=FONT,
+            font_size=27,
+            color=TEXT_SECONDARY,
+            weight="BOLD",
+        )
+        outer_side.rotate(PI / 2)
+        outer_side.next_to(outer, RIGHT, buff=0.18)
+
+        outer_labels = VGroup(outer_top, outer_side)
+        outer_labels.set_z_index(15)
 
         return {
             "outer": outer,
+            "outer_labels": outer_labels,
             "triangles": triangles,
             "center_square": center_square,
             "center_label": center_label,
-            "c_side_label": c_side_label,
-            "outer_label": outer_label,
+            "c_label": c_label,
+            "square_markers": square_markers,
         }
 
     def make_layout_two(self, a: float, b: float) -> dict[str, object]:
-        s = a + b
-        outer = Square(side_length=s, stroke_color=OUTLINE, stroke_width=5)
-        outer.scale(0.86).move_to(DOWN * 0.5)
-        outer.set_z_index(20)
+        side_length = a + b
+        outer = self.make_outer_square(side_length)
 
         triangles = [
-            self.make_polygon([(0, 0), (b, 0), (b, a)], TRIANGLE_COLORS[0], s, outer),
-            self.make_polygon([(0, 0), (0, a), (b, a)], TRIANGLE_COLORS[1], s, outer),
-            self.make_polygon([(b, a), (s, a), (s, s)], TRIANGLE_COLORS[2], s, outer),
-            self.make_polygon([(b, a), (b, s), (s, s)], TRIANGLE_COLORS[3], s, outer),
+            self.make_polygon([(0, 0), (0, a), (b, a)], TRIANGLE_COLORS[0], side_length, outer),
+            self.make_polygon([(0, 0), (b, 0), (b, a)], TRIANGLE_COLORS[1], side_length, outer),
+            self.make_polygon([(b, a), (side_length, a), (side_length, side_length)], TRIANGLE_COLORS[2], side_length, outer),
+            self.make_polygon([(b, a), (b, side_length), (side_length, side_length)], TRIANGLE_COLORS[3], side_length, outer),
         ]
 
-        a_square = self.make_polygon(
-            [(b, 0), (s, 0), (s, a), (b, a)],
-            A_COLOR,
-            s,
-            outer,
-            fill_opacity=0.3,
-            stroke_width=4,
-        )
         b_square = self.make_polygon(
-            [(0, a), (b, a), (b, s), (0, s)],
+            [(0, a), (b, a), (b, side_length), (0, side_length)],
             B_COLOR,
-            s,
+            side_length,
             outer,
             fill_opacity=0.3,
-            stroke_width=4,
+            stroke_width=3.2,
         )
+        b_square.set_z_index(3)
 
-        a_label = Text("a²", font=FONT, font_size=38, color=A_COLOR, weight="BOLD").move_to(a_square.get_center())
-        b_label = Text("b²", font=FONT, font_size=38, color=B_COLOR, weight="BOLD").move_to(b_square.get_center())
+        a_square = self.make_polygon(
+            [(b, 0), (side_length, 0), (side_length, a), (b, a)],
+            A_COLOR,
+            side_length,
+            outer,
+            fill_opacity=0.3,
+            stroke_width=3.2,
+        )
+        a_square.set_z_index(3)
+
+        b_label = Text(
+            "b²",
+            font=FONT,
+            font_size=38,
+            color=B_COLOR,
+            weight="BOLD",
+        )
+        b_label.move_to(b_square.get_center())
+        b_label.set_z_index(8)
+
+        a_label = Text(
+            "a²",
+            font=FONT,
+            font_size=38,
+            color=A_COLOR,
+            weight="BOLD",
+        )
+        a_label.move_to(a_square.get_center())
+        a_label.set_z_index(8)
 
         return {
             "outer": outer,
@@ -341,16 +422,52 @@ class PythagoreanShortsPrototype(Scene):
             "b_label": b_label,
         }
 
-    def make_equation(self) -> VGroup:
-        tokens = [
-            Text("c²", font=FONT, font_size=40, color=C_COLOR, weight="BOLD"),
-            Text("=", font=FONT, font_size=40, color=TEXT_DARK, weight="BOLD"),
-            Text("a²", font=FONT, font_size=40, color=A_COLOR, weight="BOLD"),
-            Text("+", font=FONT, font_size=40, color=TEXT_DARK, weight="BOLD"),
-            Text("b²", font=FONT, font_size=40, color=B_COLOR, weight="BOLD"),
-        ]
-        group = VGroup(*tokens).arrange(RIGHT, buff=0.18)
-        return group
+    def make_proof_note(self) -> VGroup:
+        line = Line(LEFT * 2.65, RIGHT * 2.65, color=PANEL_STROKE, stroke_width=2)
+        text = Text(
+            "Same outer square. Same four triangles. Same leftover area.",
+            font=FONT,
+            font_size=24,
+            color=TEXT_SECONDARY,
+        )
+        note = VGroup(line, text).arrange(DOWN, buff=0.12)
+        return note
+
+    def make_equation_panel(self) -> dict[str, object]:
+        tokens = VGroup(
+            Text("a²", font=FONT, font_size=42, color=A_COLOR, weight="BOLD"),
+            Text("+", font=FONT, font_size=42, color=TEXT_PRIMARY, weight="BOLD"),
+            Text("b²", font=FONT, font_size=42, color=B_COLOR, weight="BOLD"),
+            Text("=", font=FONT, font_size=42, color=TEXT_PRIMARY, weight="BOLD"),
+            Text("c²", font=FONT, font_size=42, color=C_COLOR, weight="BOLD"),
+        )
+        tokens.arrange(RIGHT, buff=0.16)
+
+        panel = RoundedRectangle(
+            corner_radius=0.22,
+            width=tokens.width + 0.86,
+            height=tokens.height + 0.58,
+            fill_color=PANEL_FILL,
+            fill_opacity=0.92,
+            stroke_color=PANEL_STROKE,
+            stroke_width=2,
+        )
+        tokens.move_to(panel.get_center())
+
+        group = VGroup(panel, tokens)
+        return {"group": group, "panel": panel, "tokens": tokens}
+
+    def make_outer_square(self, side_length: float) -> Square:
+        outer = Square(
+            side_length=side_length,
+            stroke_color=OUTLINE,
+            stroke_width=3.2,
+            fill_color=SURFACE,
+            fill_opacity=0.58,
+        )
+        outer.scale(LAYOUT_SCALE).move_to(LAYOUT_CENTER)
+        outer.set_z_index(1)
+        return outer
 
     def make_polygon(
         self,
@@ -359,19 +476,74 @@ class PythagoreanShortsPrototype(Scene):
         side_length: float,
         outer_square: Square,
         fill_opacity: float = 0.94,
-        stroke_width: float = 5,
+        stroke_width: float = 4.0,
     ) -> Polygon:
-        base_points = [self.to_scene_point(x, y, side_length) for x, y in points]
         polygon = Polygon(
-            *base_points,
+            *[self.to_scene_point(x, y, side_length) for x, y in points],
             stroke_color=OUTLINE,
             stroke_width=stroke_width,
             fill_color=fill_color,
             fill_opacity=fill_opacity,
         )
-        polygon.scale(0.86, about_point=ORIGIN)
+        polygon.scale(LAYOUT_SCALE, about_point=ORIGIN)
         polygon.shift(outer_square.get_center())
+        polygon.set_z_index(5)
         return polygon
+
+    def make_right_angle_marker(
+        self,
+        vertex: np.ndarray,
+        point_a: np.ndarray,
+        point_b: np.ndarray,
+        size: float = 0.16,
+        stroke_width: float = 3.0,
+    ) -> VGroup:
+        direction_a = self.unit(point_a - vertex)
+        direction_b = self.unit(point_b - vertex)
+        corner = vertex + (direction_a + direction_b) * size
+
+        marker = VGroup(
+            Line(vertex + direction_a * size, corner, color=MARKER_COLOR, stroke_width=stroke_width),
+            Line(vertex + direction_b * size, corner, color=MARKER_COLOR, stroke_width=stroke_width),
+        )
+        return marker
+
+    def make_segment_label(
+        self,
+        text: str,
+        start: np.ndarray,
+        end: np.ndarray,
+        color: str,
+        font_size: float,
+        buff: float,
+        rotate_text: bool = False,
+        reference_point: np.ndarray | None = None,
+    ) -> Text:
+        direction = end - start
+        midpoint = (start + end) / 2
+        normal = self.unit(np.array([-direction[1], direction[0], 0.0]))
+
+        if reference_point is not None and np.dot(midpoint - reference_point, normal) < 0:
+            normal *= -1
+
+        label = Text(text, font=FONT, font_size=font_size, color=color, weight="BOLD")
+
+        if rotate_text:
+            angle = float(np.arctan2(direction[1], direction[0]))
+            if angle > PI / 2:
+                angle -= PI
+            if angle < -PI / 2:
+                angle += PI
+            label.rotate(angle)
+
+        label.move_to(midpoint + normal * buff)
+        return label
 
     def to_scene_point(self, x: float, y: float, side_length: float) -> np.ndarray:
         return np.array([x - side_length / 2, y - side_length / 2, 0.0])
+
+    def unit(self, vector: np.ndarray) -> np.ndarray:
+        length = np.linalg.norm(vector)
+        if length == 0:
+            return vector
+        return vector / length
