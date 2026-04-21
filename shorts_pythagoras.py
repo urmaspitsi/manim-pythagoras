@@ -109,21 +109,24 @@ class PythagoreanShortsPrototype(Scene):
             run_time=0.8,
         )
         self.play(
-            AnimationGroup(
-                *[
-                    layout_one["triangles"][0].animate(path_arc=-PI / 10).become(layout_two["triangles"][0]),
-                    layout_one["triangles"][1].animate(path_arc=PI / 9).become(layout_two["triangles"][1]),
-                    layout_one["triangles"][2].animate(path_arc=-PI / 12).become(layout_two["triangles"][2]),
-                    layout_one["triangles"][3].animate(path_arc=PI / 11).become(layout_two["triangles"][3]),
-                ],
-                lag_ratio=0.05,
+            FadeOut(
+                VGroup(
+                    *layout_one["triangles"],
+                    layout_one["center_square"],
+                    layout_one["c_side_label"],
+                    layout_one["center_label"],
+                ),
+                shift=LEFT * 0.15,
             ),
-            FadeOut(layout_one["center_square"]),
-            FadeOut(layout_one["c_side_label"]),
-            FadeOut(layout_one["center_label"]),
-            FadeIn(layout_two["a_square"]),
-            FadeIn(layout_two["b_square"]),
-            run_time=2.4,
+            FadeIn(
+                VGroup(
+                    *layout_two["triangles"],
+                    layout_two["a_square"],
+                    layout_two["b_square"],
+                ),
+                shift=RIGHT * 0.15,
+            ),
+            run_time=1.4,
         )
         self.play(
             ReplacementTransform(caption, self.make_caption("Now the empty space is a² and b².")),
@@ -258,6 +261,7 @@ class PythagoreanShortsPrototype(Scene):
         s = a + b
         outer = Square(side_length=s, stroke_color=OUTLINE, stroke_width=5)
         outer.scale(0.86).move_to(DOWN * 0.5)
+        outer.set_z_index(20)
 
         triangles = [
             self.make_polygon([(0, 0), (a, 0), (0, b)], TRIANGLE_COLORS[0], s, outer),
@@ -284,6 +288,7 @@ class PythagoreanShortsPrototype(Scene):
 
         outer_label = Text("a + b", font=FONT, font_size=28, color=TEXT_DARK, weight="BOLD")
         outer_label.next_to(outer, UP, buff=0.2)
+        outer_label.set_z_index(21)
 
         return {
             "outer": outer,
@@ -298,6 +303,7 @@ class PythagoreanShortsPrototype(Scene):
         s = a + b
         outer = Square(side_length=s, stroke_color=OUTLINE, stroke_width=5)
         outer.scale(0.86).move_to(DOWN * 0.5)
+        outer.set_z_index(20)
 
         triangles = [
             self.make_polygon([(0, 0), (b, 0), (b, a)], TRIANGLE_COLORS[0], s, outer),
@@ -363,8 +369,8 @@ class PythagoreanShortsPrototype(Scene):
             fill_color=fill_color,
             fill_opacity=fill_opacity,
         )
-        polygon.scale(0.86)
-        polygon.move_to(polygon.get_center() + outer_square.get_center())
+        polygon.scale(0.86, about_point=ORIGIN)
+        polygon.shift(outer_square.get_center())
         return polygon
 
     def to_scene_point(self, x: float, y: float, side_length: float) -> np.ndarray:
