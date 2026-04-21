@@ -12,6 +12,7 @@ from manim import (
     PI,
     RIGHT,
     UP,
+    AnimationGroup,
     Circle,
     Create,
     DrawBorderThenFill,
@@ -21,9 +22,11 @@ from manim import (
     LaggedStart,
     Line,
     Polygon,
+    Rotate,
     RoundedRectangle,
     Scene,
     Square,
+    Succession,
     Text,
     Transform,
     TransformFromCopy,
@@ -40,21 +43,21 @@ config.pixel_height = 1920
 config.frame_width = 9
 config.frame_height = 16
 config.frame_rate = 30
-config.background_color = "#0B1020"
+config.background_color = "#09101C"
 
-SURFACE = "#11192B"
-PANEL_FILL = "#121B30"
-PANEL_STROKE = "#2A3A5A"
-TEXT_PRIMARY = "#F4F7FB"
-TEXT_SECONDARY = "#9FB0C7"
-OUTLINE = "#D6E2F1"
-TRIANGLE_COLORS = ["#244C74", "#2A5A86", "#316898", "#3877AA"]
-A_COLOR = "#66C18C"
-B_COLOR = "#59B7D3"
-C_COLOR = "#F4C15D"
-ACCENT = "#7AA7F8"
+SURFACE = "#101828"
+PANEL_FILL = "#111B2E"
+PANEL_STROKE = "#314566"
+TEXT_PRIMARY = "#F4F1EA"
+TEXT_SECONDARY = "#AAB7CA"
+OUTLINE = "#DCE6F2"
+TRIANGLE_COLORS = ["#23466B", "#2B5680", "#326591", "#3C76A2"]
+A_COLOR = "#74C690"
+B_COLOR = "#67BED7"
+C_COLOR = "#E4BF6A"
+ACCENT = "#D8B36A"
 MARKER_COLOR = "#B6C7DB"
-FONT = "Georgia"
+FONT = "Palatino Linotype"
 LAYOUT_SCALE = 0.96
 LAYOUT_CENTER = DOWN * 0.55
 
@@ -84,12 +87,17 @@ class PythagoreanShortsPrototype(Scene):
         )
         self.wait(0.35)
 
+        next_caption = self.make_caption("Four congruent copies fit in a square of side a + b.")
         self.play(
-            Transform(caption, self.make_caption("Four congruent copies fit in a square of side a + b.")),
+            Succession(
+                FadeOut(caption, shift=UP * 0.05),
+                FadeIn(next_caption, shift=UP * 0.05),
+            ),
             Create(layout_one["outer"]),
             FadeIn(layout_one["outer_labels"], shift=UP * 0.06),
             run_time=1.2,
         )
+        caption = next_caption
         self.play(
             LaggedStart(
                 *[TransformFromCopy(reference["triangle"], triangle) for triangle in layout_one["triangles"]],
@@ -104,10 +112,11 @@ class PythagoreanShortsPrototype(Scene):
         triangles = VGroup(*layout_one["triangles"])
         self.wait(0.2)
 
+        next_caption = self.make_caption("Each edge is c, and adjacent acute angles\nadd to 90 degrees, so the gap is a square.")
         self.play(
-            Transform(
-                caption,
-                self.make_caption("Each edge is c, and adjacent acute angles\nadd to 90°, so the gap is a square."),
+            Succession(
+                FadeOut(caption, shift=UP * 0.05),
+                FadeIn(next_caption, shift=UP * 0.05),
             ),
             DrawBorderThenFill(layout_one["center_square"]),
             FadeIn(layout_one["square_markers"], shift=UP * 0.04),
@@ -115,48 +124,70 @@ class PythagoreanShortsPrototype(Scene):
             FadeIn(layout_one["center_label"], scale=0.92),
             run_time=1.9,
         )
+        caption = next_caption
         self.wait(0.55)
 
+        next_caption = self.make_caption("Now rearrange the same four triangles.")
         self.play(
-            Transform(caption, self.make_caption("Now rearrange the same four triangles.")),
+            Succession(
+                FadeOut(caption, shift=UP * 0.05),
+                FadeIn(next_caption, shift=UP * 0.05),
+            ),
             run_time=0.8,
         )
+        caption = next_caption
         self.play(
-            Transform(triangles[0], layout_two["triangles"][0], path_arc=-PI / 5),
-            Transform(triangles[1], layout_two["triangles"][1], path_arc=PI / 6),
-            Transform(triangles[2], layout_two["triangles"][2], path_arc=PI / 7),
-            Transform(triangles[3], layout_two["triangles"][3], path_arc=-PI / 6),
             FadeOut(layout_one["center_square"]),
             FadeOut(layout_one["square_markers"]),
             FadeOut(layout_one["c_label"]),
             FadeOut(layout_one["center_label"]),
-            run_time=2.4,
+            run_time=0.6,
+        )
+        self.play(
+            AnimationGroup(
+                Rotate(triangles[1], angle=PI / 2, about_point=triangles[1].get_center()),
+                Rotate(triangles[2], angle=-PI / 2, about_point=triangles[2].get_center()),
+                lag_ratio=0.0,
+            ),
+            run_time=0.95,
+        )
+        self.play(
+            triangles[1].animate.move_to(layout_two["triangles"][1].get_center()),
+            triangles[2].animate.move_to(layout_two["triangles"][2].get_center()),
+            run_time=1.25,
         )
 
+        next_caption = self.make_caption("The uncovered area is now a² plus b².")
         self.play(
-            Transform(caption, self.make_caption("The uncovered area is now a² plus b².")),
+            Succession(
+                FadeOut(caption, shift=UP * 0.05),
+                FadeIn(next_caption, shift=UP * 0.05),
+            ),
             FadeIn(layout_two["a_square"]),
             FadeIn(layout_two["b_square"]),
             FadeIn(layout_two["a_label"], scale=0.9),
             FadeIn(layout_two["b_label"], scale=0.9),
             run_time=1.25,
         )
+        caption = next_caption
         self.wait(0.5)
 
         proof_note = self.make_proof_note()
-        proof_note.next_to(layout_one["outer"], DOWN, buff=0.38)
+        proof_note.next_to(layout_one["outer"], DOWN, buff=0.24)
 
         equation = self.make_equation_panel()
-        equation["group"].next_to(proof_note, DOWN, buff=0.28)
+        equation["group"].next_to(proof_note, DOWN, buff=0.22)
 
+        next_caption = self.make_caption("The outer square stayed the same,\nand the four triangles stayed the same.")
         self.play(
-            Transform(
-                caption,
-                self.make_caption("The outer square stayed the same,\nand the four triangles stayed the same."),
+            Succession(
+                FadeOut(caption, shift=UP * 0.05),
+                FadeIn(next_caption, shift=UP * 0.05),
             ),
             FadeIn(proof_note, shift=UP * 0.1),
             run_time=1.1,
         )
+        caption = next_caption
         self.play(FadeIn(equation["panel"], scale=0.96), run_time=0.45)
         self.play(
             TransformFromCopy(layout_two["a_label"], equation["tokens"][0]),
@@ -166,11 +197,16 @@ class PythagoreanShortsPrototype(Scene):
             FadeIn(equation["tokens"][4], shift=UP * 0.04),
             run_time=1.35,
         )
+        next_caption = self.make_caption("Therefore, a² + b² = c².")
         self.play(
-            Transform(caption, self.make_caption("So a² + b² = c².")),
+            Succession(
+                FadeOut(caption, shift=UP * 0.05),
+                FadeIn(next_caption, shift=UP * 0.05),
+            ),
             Indicate(equation["tokens"][4], color=C_COLOR, scale_factor=1.08),
             run_time=0.85,
         )
+        caption = next_caption
         self.wait(1.7)
 
     def make_backdrop(self) -> VGroup:
@@ -191,44 +227,44 @@ class PythagoreanShortsPrototype(Scene):
         eyebrow = Text(
             "A classic rearrangement proof",
             font=FONT,
-            font_size=21,
-            color=TEXT_SECONDARY,
+            font_size=18,
+            color=ACCENT,
         )
         title = Text(
             "Why a² + b² = c²",
             font=FONT,
-            font_size=42,
+            font_size=40,
             color=TEXT_PRIMARY,
             weight="BOLD",
         )
-        rule = Line(LEFT * 1.45, RIGHT * 1.45, color=PANEL_STROKE, stroke_width=2)
+        rule = Line(LEFT * 1.5, RIGHT * 1.5, color=ACCENT, stroke_width=1.6)
 
         group = VGroup(eyebrow, title, rule).arrange(DOWN, buff=0.14)
-        group.to_edge(UP, buff=0.45)
+        group.to_edge(UP, buff=0.9)
         return group
 
     def make_caption(self, message: str) -> VGroup:
         label = Text(
             message,
             font=FONT,
-            font_size=24,
+            font_size=23,
             color=TEXT_PRIMARY,
             line_spacing=0.92,
         )
-        label.scale_to_fit_width(7.15)
+        label.scale_to_fit_width(6.9)
         panel = RoundedRectangle(
-            corner_radius=0.2,
+            corner_radius=0.24,
             width=min(8.15, label.width + 0.82),
             height=label.height + 0.48,
             fill_color=PANEL_FILL,
-            fill_opacity=0.9,
+            fill_opacity=0.84,
             stroke_color=PANEL_STROKE,
-            stroke_width=2,
+            stroke_width=1.8,
         )
         label.move_to(panel.get_center())
 
         group = VGroup(panel, label)
-        group.to_edge(DOWN, buff=0.48)
+        group.to_edge(DOWN, buff=1.15)
         return group
 
     def make_reference_triangle(self, a: float, b: float) -> dict[str, VGroup]:
@@ -273,18 +309,18 @@ class PythagoreanShortsPrototype(Scene):
 
         triangles = [
             self.make_polygon([(0, 0), (a, 0), (0, b)], TRIANGLE_COLORS[0], side_length, outer),
-            self.make_polygon([(a, 0), (side_length, 0), (side_length, b)], TRIANGLE_COLORS[1], side_length, outer),
+            self.make_polygon([(a, 0), (side_length, 0), (side_length, a)], TRIANGLE_COLORS[1], side_length, outer),
             self.make_polygon(
-                [(b, side_length), (side_length, side_length), (side_length, b)],
+                [(side_length, a), (side_length, side_length), (b, side_length)],
                 TRIANGLE_COLORS[2],
                 side_length,
                 outer,
             ),
-            self.make_polygon([(0, a), (0, side_length), (b, side_length)], TRIANGLE_COLORS[3], side_length, outer),
+            self.make_polygon([(0, b), (0, side_length), (b, side_length)], TRIANGLE_COLORS[3], side_length, outer),
         ]
 
         center_square = self.make_polygon(
-            [(a, 0), (side_length, b), (b, side_length), (0, a)],
+            [(a, 0), (side_length, a), (b, side_length), (0, b)],
             C_COLOR,
             side_length,
             outer,
@@ -368,13 +404,13 @@ class PythagoreanShortsPrototype(Scene):
 
         triangles = [
             self.make_polygon([(0, 0), (0, a), (b, a)], TRIANGLE_COLORS[0], side_length, outer),
-            self.make_polygon([(0, 0), (b, 0), (b, a)], TRIANGLE_COLORS[1], side_length, outer),
-            self.make_polygon([(b, a), (side_length, a), (side_length, side_length)], TRIANGLE_COLORS[2], side_length, outer),
-            self.make_polygon([(b, a), (b, side_length), (side_length, side_length)], TRIANGLE_COLORS[3], side_length, outer),
+            self.make_polygon([(a, b), (0, b), (a, 0)], TRIANGLE_COLORS[1], side_length, outer),
+            self.make_polygon([(b, b), (b, side_length), (0, b)], TRIANGLE_COLORS[2], side_length, outer),
+            self.make_polygon([(0, side_length), (0, b), (b, side_length)], TRIANGLE_COLORS[3], side_length, outer),
         ]
 
         b_square = self.make_polygon(
-            [(0, a), (b, a), (b, side_length), (0, side_length)],
+            [(a, 0), (side_length, 0), (side_length, b), (a, b)],
             B_COLOR,
             side_length,
             outer,
@@ -384,7 +420,7 @@ class PythagoreanShortsPrototype(Scene):
         b_square.set_z_index(3)
 
         a_square = self.make_polygon(
-            [(b, 0), (side_length, 0), (side_length, a), (b, a)],
+            [(b, b), (side_length, b), (side_length, side_length), (b, side_length)],
             A_COLOR,
             side_length,
             outer,
@@ -427,7 +463,7 @@ class PythagoreanShortsPrototype(Scene):
         text = Text(
             "Same outer square. Same four triangles. Same leftover area.",
             font=FONT,
-            font_size=24,
+            font_size=22,
             color=TEXT_SECONDARY,
         )
         note = VGroup(line, text).arrange(DOWN, buff=0.12)
@@ -444,13 +480,13 @@ class PythagoreanShortsPrototype(Scene):
         tokens.arrange(RIGHT, buff=0.16)
 
         panel = RoundedRectangle(
-            corner_radius=0.22,
+            corner_radius=0.26,
             width=tokens.width + 0.86,
             height=tokens.height + 0.58,
             fill_color=PANEL_FILL,
-            fill_opacity=0.92,
+            fill_opacity=0.88,
             stroke_color=PANEL_STROKE,
-            stroke_width=2,
+            stroke_width=1.8,
         )
         tokens.move_to(panel.get_center())
 
