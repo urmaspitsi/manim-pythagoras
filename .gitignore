@@ -1,0 +1,9 @@
+.venv/
+.venv314/
+.venv-py314/
+.venv314-clean/
+.tmp/
+.virtualenv-appdata/
+__pycache__/
+media/
+
