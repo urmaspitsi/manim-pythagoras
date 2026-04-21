@@ -85,8 +85,11 @@ class PythagoreanShortsPrototype(Scene):
             run_time=1.0,
         )
         self.play(
-            LaggedStart(*[DrawBorderThenFill(triangle) for triangle in layout_one["triangles"]], lag_ratio=0.15),
-            run_time=1.8,
+            LaggedStart(
+                *[FadeIn(triangle, scale=0.96) for triangle in layout_one["triangles"]],
+                lag_ratio=0.08,
+            ),
+            run_time=1.4,
         )
         self.wait(0.6)
 
