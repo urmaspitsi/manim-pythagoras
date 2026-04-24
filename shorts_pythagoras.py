@@ -22,7 +22,6 @@ from manim import (
     LaggedStart,
     Line,
     Polygon,
-    Rotate,
     RoundedRectangle,
     Scene,
     Square,
@@ -43,23 +42,23 @@ config.pixel_height = 1920
 config.frame_width = 9
 config.frame_height = 16
 config.frame_rate = 30
-config.background_color = "#09101C"
+config.background_color = "#0A0E16"
 
-SURFACE = "#101828"
-PANEL_FILL = "#111B2E"
-PANEL_STROKE = "#314566"
-TEXT_PRIMARY = "#F4F1EA"
-TEXT_SECONDARY = "#AAB7CA"
-OUTLINE = "#DCE6F2"
-TRIANGLE_COLORS = ["#23466B", "#2B5680", "#326591", "#3C76A2"]
-A_COLOR = "#74C690"
-B_COLOR = "#67BED7"
-C_COLOR = "#E4BF6A"
-ACCENT = "#D8B36A"
-MARKER_COLOR = "#B6C7DB"
+SURFACE = "#111722"
+PANEL_FILL = "#121A26"
+PANEL_STROKE = "#354253"
+TEXT_PRIMARY = "#F5F0E8"
+TEXT_SECONDARY = "#B5C0CE"
+OUTLINE = "#E6E0D5"
+TRIANGLE_COLORS = ["#284A63", "#315B75", "#3A6A80", "#477A8A"]
+A_COLOR = "#8CCEA2"
+B_COLOR = "#79BFD2"
+C_COLOR = "#D8B46E"
+ACCENT = "#CFAE72"
+MARKER_COLOR = "#C3CDD8"
 FONT = "Palatino Linotype"
-LAYOUT_SCALE = 0.96
-LAYOUT_CENTER = DOWN * 0.55
+LAYOUT_SCALE = 0.9
+LAYOUT_CENTER = DOWN * 0.08
 
 
 class PythagoreanShortsPrototype(Scene):
@@ -141,20 +140,17 @@ class PythagoreanShortsPrototype(Scene):
             FadeOut(layout_one["square_markers"]),
             FadeOut(layout_one["c_label"]),
             FadeOut(layout_one["center_label"]),
-            run_time=0.6,
+            run_time=0.45,
         )
         self.play(
             AnimationGroup(
-                Rotate(triangles[1], angle=PI / 2, about_point=triangles[1].get_center()),
-                Rotate(triangles[2], angle=-PI / 2, about_point=triangles[2].get_center()),
-                lag_ratio=0.0,
+                *[
+                    Transform(triangles[index], layout_two["triangles"][index])
+                    for index in range(4)
+                ],
+                lag_ratio=0.04,
             ),
-            run_time=0.95,
-        )
-        self.play(
-            triangles[1].animate.move_to(layout_two["triangles"][1].get_center()),
-            triangles[2].animate.move_to(layout_two["triangles"][2].get_center()),
-            run_time=1.25,
+            run_time=1.55,
         )
 
         next_caption = self.make_caption("The uncovered area is now a² plus b².")
@@ -210,14 +206,14 @@ class PythagoreanShortsPrototype(Scene):
         self.wait(1.7)
 
     def make_backdrop(self) -> VGroup:
-        halo_left = Circle(radius=3.2, stroke_width=0, fill_color="#173458", fill_opacity=0.16)
-        halo_left.move_to(LEFT * 3.6 + UP * 5.5)
+        halo_left = Circle(radius=3.1, stroke_width=0, fill_color="#17304A", fill_opacity=0.12)
+        halo_left.move_to(LEFT * 3.7 + UP * 5.35)
 
-        halo_right = Circle(radius=2.8, stroke_width=0, fill_color="#15405A", fill_opacity=0.14)
-        halo_right.move_to(RIGHT * 2.7 + DOWN * 4.5)
+        halo_right = Circle(radius=2.75, stroke_width=0, fill_color="#173E4C", fill_opacity=0.1)
+        halo_right.move_to(RIGHT * 2.8 + DOWN * 4.25)
 
-        halo_bottom = Circle(radius=2.3, stroke_width=0, fill_color="#3C2A52", fill_opacity=0.12)
-        halo_bottom.move_to(LEFT * 2.2 + DOWN * 5.9)
+        halo_bottom = Circle(radius=2.15, stroke_width=0, fill_color="#3A3148", fill_opacity=0.08)
+        halo_bottom.move_to(LEFT * 2.35 + DOWN * 5.65)
 
         backdrop = VGroup(halo_left, halo_right, halo_bottom)
         backdrop.set_z_index(-20)
@@ -227,44 +223,44 @@ class PythagoreanShortsPrototype(Scene):
         eyebrow = Text(
             "A classic rearrangement proof",
             font=FONT,
-            font_size=18,
+            font_size=17,
             color=ACCENT,
         )
         title = Text(
             "Why a² + b² = c²",
             font=FONT,
-            font_size=40,
+            font_size=38,
             color=TEXT_PRIMARY,
             weight="BOLD",
         )
         rule = Line(LEFT * 1.5, RIGHT * 1.5, color=ACCENT, stroke_width=1.6)
 
-        group = VGroup(eyebrow, title, rule).arrange(DOWN, buff=0.14)
-        group.to_edge(UP, buff=0.9)
+        group = VGroup(eyebrow, title, rule).arrange(DOWN, buff=0.13)
+        group.to_edge(UP, buff=1.18)
         return group
 
     def make_caption(self, message: str) -> VGroup:
         label = Text(
             message,
             font=FONT,
-            font_size=23,
+            font_size=22,
             color=TEXT_PRIMARY,
-            line_spacing=0.92,
+            line_spacing=0.9,
         )
-        label.scale_to_fit_width(6.9)
+        label.scale_to_fit_width(6.7)
         panel = RoundedRectangle(
-            corner_radius=0.24,
-            width=min(8.15, label.width + 0.82),
-            height=label.height + 0.48,
+            corner_radius=0.18,
+            width=min(7.85, label.width + 0.74),
+            height=label.height + 0.42,
             fill_color=PANEL_FILL,
-            fill_opacity=0.84,
+            fill_opacity=0.82,
             stroke_color=PANEL_STROKE,
-            stroke_width=1.8,
+            stroke_width=1.35,
         )
         label.move_to(panel.get_center())
 
         group = VGroup(panel, label)
-        group.to_edge(DOWN, buff=1.15)
+        group.to_edge(DOWN, buff=1.78)
         return group
 
     def make_reference_triangle(self, a: float, b: float) -> dict[str, VGroup]:
@@ -277,7 +273,7 @@ class PythagoreanShortsPrototype(Scene):
             fill_color=TRIANGLE_COLORS[1],
             fill_opacity=0.94,
         )
-        triangle.scale(0.92).move_to(UP * 1.55)
+        triangle.scale(0.9).move_to(UP * 1.18)
 
         vertices = triangle.get_vertices()
         right_angle = self.make_right_angle_marker(vertices[0], vertices[1], vertices[2], size=0.18, stroke_width=3.2)
@@ -403,14 +399,14 @@ class PythagoreanShortsPrototype(Scene):
         outer = self.make_outer_square(side_length)
 
         triangles = [
-            self.make_polygon([(0, 0), (0, a), (b, a)], TRIANGLE_COLORS[0], side_length, outer),
-            self.make_polygon([(a, b), (0, b), (a, 0)], TRIANGLE_COLORS[1], side_length, outer),
-            self.make_polygon([(b, b), (b, side_length), (0, b)], TRIANGLE_COLORS[2], side_length, outer),
-            self.make_polygon([(0, side_length), (0, b), (b, side_length)], TRIANGLE_COLORS[3], side_length, outer),
+            self.make_polygon([(a, 0), (side_length, 0), (side_length, a)], TRIANGLE_COLORS[0], side_length, outer),
+            self.make_polygon([(a, 0), (side_length, a), (a, a)], TRIANGLE_COLORS[1], side_length, outer),
+            self.make_polygon([(0, a), (a, a), (0, side_length)], TRIANGLE_COLORS[2], side_length, outer),
+            self.make_polygon([(a, a), (a, side_length), (0, side_length)], TRIANGLE_COLORS[3], side_length, outer),
         ]
 
         b_square = self.make_polygon(
-            [(a, 0), (side_length, 0), (side_length, b), (a, b)],
+            [(a, a), (side_length, a), (side_length, side_length), (a, side_length)],
             B_COLOR,
             side_length,
             outer,
@@ -420,7 +416,7 @@ class PythagoreanShortsPrototype(Scene):
         b_square.set_z_index(3)
 
         a_square = self.make_polygon(
-            [(b, b), (side_length, b), (side_length, side_length), (b, side_length)],
+            [(0, 0), (a, 0), (a, a), (0, a)],
             A_COLOR,
             side_length,
             outer,

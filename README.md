@@ -16,11 +16,11 @@ Or use the helper:
 .\render.ps1 low
 .\render.ps1 medium
 .\render.ps1 high
-.\render.ps1 medium -Fresh
+.\render.ps1 medium -KeepCache
 ```
 
-Use `-Fresh` when you want to force a full uncached render instead of reusing Manim's cached partials.
-This helper also clears the scene's old partial render files and previous final MP4 before the fresh render starts.
+Each render is fresh by default: the helper deletes the old video output folder and text cache, then runs Manim with caching disabled.
+Use `-KeepCache` only when you explicitly want Manim to reuse cached partial renders while iterating.
 
 ## Files
 
