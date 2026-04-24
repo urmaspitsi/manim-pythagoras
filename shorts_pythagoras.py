@@ -98,15 +98,20 @@ class PythagoreanShortsPrototype(Scene):
         )
         caption = next_caption
         self.play(
-            LaggedStart(
-                *[TransformFromCopy(reference["triangle"], triangle) for triangle in layout_one["triangles"]],
-                lag_ratio=0.12,
-            ),
             FadeOut(reference["labels"], shift=DOWN * 0.08),
             FadeOut(reference["right_angle"], shift=DOWN * 0.08),
-            run_time=2.2,
+            run_time=0.35,
         )
-        self.play(FadeOut(reference["triangle"], scale=0.92), run_time=0.3)
+        spawned_triangles = [reference["triangle"]]
+        for target_triangle in layout_one["triangles"][1:]:
+            next_triangle = reference["triangle"].copy()
+            next_triangle.set_z_index(target_triangle.z_index)
+            self.add(next_triangle)
+            self.play(Transform(next_triangle, target_triangle), run_time=0.9)
+            spawned_triangles.append(next_triangle)
+            self.wait(0.08)
+
+        layout_one["triangles"] = spawned_triangles
 
         triangles = VGroup(*layout_one["triangles"])
         self.wait(0.2)
