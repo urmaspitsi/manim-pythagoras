@@ -50,15 +50,15 @@ PANEL_STROKE = "#354253"
 TEXT_PRIMARY = "#F5F0E8"
 TEXT_SECONDARY = "#B5C0CE"
 OUTLINE = "#E6E0D5"
-TRIANGLE_COLORS = ["#284A63", "#315B75", "#3A6A80", "#477A8A"]
-A_COLOR = "#8CCEA2"
-B_COLOR = "#79BFD2"
+TRIANGLE_COLORS = ["#17344C", "#1F435D", "#24586A", "#2F6A70"]
+A_COLOR = "#6BAF7F"
+B_COLOR = "#67AFC2"
 C_COLOR = "#D8B46E"
-ACCENT = "#CFAE72"
+ACCENT = "#9DA6B1"
 MARKER_COLOR = "#C3CDD8"
 FONT = "Palatino Linotype"
-LAYOUT_SCALE = 0.9
-LAYOUT_CENTER = DOWN * 0.08
+LAYOUT_SCALE = 1.12
+LAYOUT_CENTER = UP * 0.32
 
 
 class PythagoreanShortsPrototype(Scene):
@@ -223,44 +223,42 @@ class PythagoreanShortsPrototype(Scene):
         eyebrow = Text(
             "A classic rearrangement proof",
             font=FONT,
-            font_size=17,
+            font_size=21,
             color=ACCENT,
         )
         title = Text(
             "Why a² + b² = c²",
             font=FONT,
-            font_size=38,
+            font_size=48,
             color=TEXT_PRIMARY,
             weight="BOLD",
         )
-        rule = Line(LEFT * 1.5, RIGHT * 1.5, color=ACCENT, stroke_width=1.6)
-
-        group = VGroup(eyebrow, title, rule).arrange(DOWN, buff=0.13)
-        group.to_edge(UP, buff=1.18)
+        group = VGroup(eyebrow, title).arrange(DOWN, buff=0.15)
+        group.to_edge(UP, buff=1.5)
         return group
 
     def make_caption(self, message: str) -> VGroup:
         label = Text(
             message,
             font=FONT,
-            font_size=22,
+            font_size=48,
             color=TEXT_PRIMARY,
             line_spacing=0.9,
         )
-        label.scale_to_fit_width(6.7)
+        label.scale_to_fit_width(8.15)
         panel = RoundedRectangle(
-            corner_radius=0.18,
-            width=min(7.85, label.width + 0.74),
-            height=label.height + 0.42,
+            corner_radius=0.16,
+            width=min(8.55, label.width + 0.72),
+            height=label.height + 0.46,
             fill_color=PANEL_FILL,
             fill_opacity=0.82,
             stroke_color=PANEL_STROKE,
-            stroke_width=1.35,
+            stroke_width=0,
         )
         label.move_to(panel.get_center())
 
         group = VGroup(panel, label)
-        group.to_edge(DOWN, buff=1.78)
+        group.to_edge(DOWN, buff=2.42)
         return group
 
     def make_reference_triangle(self, a: float, b: float) -> dict[str, VGroup]:
@@ -455,15 +453,13 @@ class PythagoreanShortsPrototype(Scene):
         }
 
     def make_proof_note(self) -> VGroup:
-        line = Line(LEFT * 2.65, RIGHT * 2.65, color=PANEL_STROKE, stroke_width=2)
         text = Text(
             "Same outer square. Same four triangles. Same leftover area.",
             font=FONT,
             font_size=22,
             color=TEXT_SECONDARY,
         )
-        note = VGroup(line, text).arrange(DOWN, buff=0.12)
-        return note
+        return VGroup(text)
 
     def make_equation_panel(self) -> dict[str, object]:
         tokens = VGroup(
@@ -482,7 +478,7 @@ class PythagoreanShortsPrototype(Scene):
             fill_color=PANEL_FILL,
             fill_opacity=0.88,
             stroke_color=PANEL_STROKE,
-            stroke_width=1.8,
+            stroke_width=0,
         )
         tokens.move_to(panel.get_center())
 
