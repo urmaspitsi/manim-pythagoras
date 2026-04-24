@@ -262,16 +262,14 @@ class PythagoreanShortsPrototype(Scene):
         return group
 
     def make_reference_triangle(self, a: float, b: float) -> dict[str, VGroup]:
-        triangle = Polygon(
-            np.array([-a / 2, -b / 2, 0.0]),
-            np.array([a / 2, -b / 2, 0.0]),
-            np.array([-a / 2, b / 2, 0.0]),
-            stroke_color=OUTLINE,
-            stroke_width=4,
-            fill_color=TRIANGLE_COLORS[1],
-            fill_opacity=0.94,
+        side_length = a + b
+        outer = self.make_outer_square(side_length)
+        triangle = self.make_polygon(
+            [(0, 0), (a, 0), (0, b)],
+            TRIANGLE_COLORS[0],
+            side_length,
+            outer,
         )
-        triangle.scale(0.9).move_to(UP * 1.18)
 
         vertices = triangle.get_vertices()
         right_angle = self.make_right_angle_marker(vertices[0], vertices[1], vertices[2], size=0.18, stroke_width=3.2)
